@@ -1,0 +1,27 @@
+{
+    "name": "florencio/hotel",
+    "description": "Agendamento de Visitas",
+    "require": {
+        "coffeecode/datalayer": "2.0.*",
+        "phpmailer/phpmailer": "^6.5"
+    },
+    "license": "proprietary",
+    "autoload": {
+        "psr-4": {
+            "Src\\": "src/",
+            "Lib\\": "lib/"
+        },
+        "files": [
+            "src/config.php"
+        ]
+    },
+    "authors": [
+        {
+            "name": "Rodrigo Tognin",
+            "email": "rotog@outlook.com"
+        }
+    ],
+    "config": {
+        "vendor-dir": "vendor/"
+    }
+}
