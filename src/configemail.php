@@ -1,6 +1,6 @@
 <?php
 
-$email_host = 'smtp.titan.email';
-$email_user = 'contato@rodrigotognin.com.br';
-$email_pass = '2@Contato5@';
-$email_reply = 'larmelhoridade2022@gmail.com';
+$email_host = 'xxxxxxxxxxxxxxxxx';
+$email_user = 'xxxxxxxxxxxxxxxx';
+$email_pass = 'xxxxxxxxxxxxxxx';
+$email_reply = 'xxxxxxxxxxxxxxxxxx';
