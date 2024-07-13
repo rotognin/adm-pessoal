@@ -13,6 +13,11 @@ $menu->addItem('Nova Anotação', 'novo', 'anotacao');
 $menu->addVoltar();
 $menu->html();
 
+// Trazer a lista de anotações gravadas. Virá do Controller
+if (!empty($anotacoes)) {
+    //
+}
+
 Saida::html();
 
 

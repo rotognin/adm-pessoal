@@ -16,12 +16,31 @@ $menu->addSair();
 $menu->html();
 
 
+
+
 Saida::html();
 
 
 
 
 /*
+
+
+$tabela = new Tabela('tabela-teste', 'table-bordered mt-2');
+$tabela->addHeader('Carro', ['class' => 'align-middle text-center']);
+$tabela->addHeader('Cor', ['class' => 'text-center', 'style' => 'padding:20px']);
+
+$linha = array(
+    'row' => array(
+        ['value' => 'Jetta', 'attrs' => ['class' => 'text-right']],
+        ['value' => 'Branco', 'attrs' => ['class' => 'text-center']]
+    )
+);
+
+$tabela->addRow($linha);
+$tabela->html();
+
+
 
 HTML::showAlert('Alerta, pessoas!', 'info');
 

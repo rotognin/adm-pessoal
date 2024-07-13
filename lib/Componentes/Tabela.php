@@ -16,15 +16,15 @@ class Tabela
     }
 
     /**
-     * Irá montar um array do tipo: ['value' => 'XXXXXX', 'class' => 'XXX XXXX XXXX']
+     * Irá montar um array do tipo: ['value' => 'XXXXXX', 'attrs' => ['class' => 'xxxxx', 'colspan' => '8']]
      */
-    public function addHeader(string $titulo, string $classe = '')
+    public function addHeader(string $titulo, array $attrs = [])
     {
-        $this->headers[] = ['value' => $titulo, 'class' => $classe];
+        $this->headers[] = ['value' => $titulo, 'attrs' => $attrs];
     }
 
     /**
-     * Passar um array do tipo: 'row' => ['value' => 'XXXXXX', 'class' => 'XXX XXXX XXXX']
+     * Passar um array do tipo: 'row' => ['value' => 'XXXXXX', 'attrs' => ['class' => 'xxxxx', 'colspan' => '8']]
      */
     public function addRow(array $row)
     {
@@ -40,10 +40,18 @@ class Tabela
         HTML;
 
         foreach ($this->headers as $header) {
-            $classe = ($header['class'] ?? '' == '') ? '' : ' class="' . $header['class'] . '" ';
+            //$classe = ($header['class'] ?? '' == '') ? '' : ' class="' . $header['class'] . '" ';
+
+            $attrs = '';
+
+            if (!empty($header['attrs'])) {
+                foreach ($header['attrs'] as $key => $value) {
+                    $attrs .= ' ' . $key . '="' . $value . '" ';
+                }
+            }
 
             $tabela .= <<<HTML
-                <th {$classe} scope="col">{$header['value']}</th>
+                <th {$attrs} scope="col">{$header['value']}</th>
             HTML;
         }
 
@@ -60,10 +68,18 @@ class Tabela
 
             foreach ($rows as $row) {
                 foreach ($row as $data) {
-                    $classe = (isset($data['class'])) ? ' class="' . $data['class'] . '" ' : '';
+                    //$classe = (isset($data['class'])) ? ' class="' . $data['class'] . '" ' : '';
+
+                    $attrs = '';
+
+                    if (!empty($data['attrs'])) {
+                        foreach ($data['attrs'] as $key => $value) {
+                            $attrs .= ' ' . $key . '="' . $value . '" ';
+                        }
+                    }
 
                     $tabela .= <<<HTML
-                        <td {$classe}>{$data['value']}</td>
+                        <td {$attrs}>{$data['value']}</td>
                     HTML;
                 }
             }
