@@ -22,4 +22,4 @@
 
 <body>
     <div class="container-fluid">
-        <h3 class="azul"><?php echo $titulo_h3; ?></h3>
+        <h3 class="azul"><?php echo $titulo_h3 ?? ''; ?></h3>

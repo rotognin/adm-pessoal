@@ -2,12 +2,14 @@
 
 session_start();
 
-use Src\Controller;
+require('./lib/definicoes.php');
 
-require ('./lib/definicoes.php');
+// Guardar gets e sets
+global $request;
+$request = new Lib\Kernel\Request;
 
-$action = (isset($_GET['action'])) ? $_GET['action'] : 'home';
-$control = (isset($_GET['control'])) ? ucfirst($_GET['control']) : '';
+$action = ($request->get('action', '') != '') ? $request->get('action') : 'home';
+$control = ($request->get('control', '') != '') ? ucfirst($request->get('control')) : '';
 $funcao = 'Src\\Controller\\' . $control . 'Controller::' . $action;
 
-call_user_func($funcao, $_POST, $_GET);
+call_user_func($funcao);

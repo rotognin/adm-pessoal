@@ -8,9 +8,9 @@ class AdminController extends Controller
 {
     public static function administradores()
     {
-        if (!self::nivelSuficiente(0)){
+        if (!self::nivelSuficiente(0)) {
             parent::view('menu');
-            Exit;
+            exit;
         }
 
         $admins = (new Admin())->find()->fetch(true);
@@ -24,48 +24,52 @@ class AdminController extends Controller
         parent::view('admin.novo', ['acao' => 'novo']);
     }
 
-    public static function alterar(array $post, array $get)
+    public static function alterar()
     {
+        global $request;
+
         criarCsrf();
-        $admin = (new Admin())->findById($post['id']);
+        $admin = (new Admin())->findById($request->post('id'));
         $admin->senha = '';
 
         parent::view('admin.alterar', ['admin' => $admin, 'acao' => 'alterar']);
     }
 
-    public static function inativar(array $post, array $get)
+    public static function inativar()
     {
-        self::alterarStatus($post, $get, 1);
+        self::alterarStatus(1);
     }
 
-    public static function ativar(array $post, array $get)
+    public static function ativar()
     {
-        self::alterarStatus($post, $get, 0);
+        self::alterarStatus(0);
     }
 
-    public static function alterarStatus(array $post, array $get, int $status)
+    public static function alterarStatus(int $status)
     {
-        $admin = (new Admin())->findById($post['id']);
+        global $request;
+
+        $admin = (new Admin())->findById($request->post('id'));
 
         $mensagem = '';
 
-        if (!$admin){
+        if (!$admin) {
             $mensagem = 'Não foi possível inativar o usuário.';
-            self::administradores($post, $get, $mensagem);
-            Exit;
+            self::administradores($mensagem);
+            exit;
         }
 
         $admin->status = $status;
 
-        if (!$admin->save()){
+        if (!$admin->save()) {
             $mensagem = 'Não foi possível alterar a situação do usuário.';
-            self::administradores($post, $get, $mensagem);
-            Exit;
+            self::administradores($mensagem);
+            exit;
         }
 
         $mensagem = 'O usuário ' . $admin->nome . ' teve a situação alterada.';
 
-        self::administradores($post, $get, $mensagem);
+        self::administradores($mensagem);
     }
 
     /**
@@ -89,61 +93,63 @@ class AdminController extends Controller
     /**
      * Verificações e gravação do usuário
      */
-    public static function gravar(array $post, array $get)
+    public static function gravar()
     {
+        global $request;
+
         // Verificar o token
-        if (!isset($post['_token']) || $post['_token'] != $_SESSION['csrf']){
+        if ($request->post('_token', '') == '' || $request->post('_token') != $_SESSION['csrf']) {
             self::administradores();
-            Exit;
+            exit;
         }
 
-        if ($post['acao'] == 'novo'){
+        if ($request->post('acao') == 'novo') {
             $admin = new Admin();
         } else {
-            $admin = (new Admin())->findById($post['id']);
+            $admin = (new Admin())->findById($request->post('id'));
         }
 
-        if ($post['senha'] != ''){
-            $admin->senha = sha1($post['senha']);
+        if ($request->post('senha') != '') {
+            $admin->senha = sha1($request->post('senha'));
         }
 
-        $admin->nome = verificarString($post['nome']);
-        $admin->email = verificarString($post['email']);
-        $admin->login = verificarString($post['login']);
-        $admin->status = $post['status'];
-        $admin->nivel = $post['nivel'];
+        $admin->nome = verificarString($request->post('nome'));
+        $admin->email = verificarString($request->post('email'));
+        $admin->login = verificarString($request->post('login'));
+        $admin->status = $request->post('status');
+        $admin->nivel = $request->post('nivel');
 
         $mensagem = '';
 
-        if ($admin->nome == ''){
+        if ($admin->nome == '') {
             $mensagem = 'O nome deve ser preenchido.<br>';
         }
 
-        if ($admin->email == ''){
+        if ($admin->email == '') {
             $mensagem = 'O e-mail deve ser preenchido.<br>';
         }
 
-        if ($admin->login == ''){
+        if ($admin->login == '') {
             $mensagem .= 'O login deve ser preenchido.<br>';
         }
 
-        if ($admin->senha == '' && $post['acao'] == 'novo'){
+        if ($admin->senha == '' && $request->post('acao') == 'novo') {
             $mensagem .= 'A senha deve ser informada para o primeiro acesso.<br>';
         }
 
-        if ($mensagem != ''){
+        if ($mensagem != '') {
             $mensagem = substr($mensagem, 0, strlen($mensagem) - 4);
             parent::view('admin.novo', ['mensagem' => $mensagem, 'admin' => $admin]);
-            Exit;
+            exit;
         }
 
-        if (!$admin->save()){
+        if (!$admin->save()) {
             $mensagem = 'Não foi possível gravar o usuário.';
             parent::view('admin.novo', ['mensagem' => $mensagem, 'admin' => $admin]);
-            Exit;
+            exit;
         }
 
-        self::administradores($post, $get);
+        self::administradores();
     }
 
     public static function esqueci()
@@ -152,18 +158,20 @@ class AdminController extends Controller
         parent::view('admin.esqueci', []);
     }
 
-    public static function enviaremail(array $post, array $get)
+    public static function enviaremail()
     {
-        if (!isset($post['_token']) || $post['_token'] != $_SESSION['csrf']){
+        global $request;
+
+        if ($request->post('_token', '') == '' || $request->post('_token') != $_SESSION['csrf']) {
             parent::logout();
             exit;
         }
 
         // Validar as informações digitadas
-        $login = verificarString($post['login']);
-        $email = verificarString($post['email']);
+        $login = verificarString($request->post('login'));
+        $email = verificarString($request->post('email'));
 
-        if ($login == '' || $email == ''){
+        if ($login == '' || $email == '') {
             $mensagem = 'Favor informar o login e o e-mail.';
             parent::view('admin.esqueci', ['mensagem' => $mensagem]);
             exit;
@@ -173,12 +181,12 @@ class AdminController extends Controller
         $params = http_build_query(["login" => $login, "email" => $email]);
         $admin = (new Admin())->find('login = :login AND email = :email', $params)->fetch();
 
-        if (!$admin){
+        if (!$admin) {
             self::view('admin.esqueci', ['mensagem' => 'E-mail ou Login incorretos']);
             exit;
         }
 
-        if (STATUS_ADMIN[$admin->status] == 'Inativo'){
+        if (STATUS_ADMIN[$admin->status] == 'Inativo') {
             self::view('index', ['mensagem' => 'Usuário inativo.']);
             exit;
         }
@@ -189,7 +197,7 @@ class AdminController extends Controller
         $admin->status = 2;
         $admin->hash = $hash;
 
-        if (!$admin->save()){
+        if (!$admin->save()) {
             gravarLog('Não foi atualizado o admin na recuperação da senha: ' . $admin->fail()->getMessage());
             self::view('index', ['mensagem' => 'Não foi possível enviar o e-mail. Favor proceder novamente.']);
             exit;
@@ -207,11 +215,13 @@ class AdminController extends Controller
     /**
      * Verificar o link do usuário e encaminhá-lo para a redifinição da senha
      */
-    public static function recuperar(array $post, array $get)
+    public static function recuperar()
     {
-        $hash = verificarString($get['hash']);
+        global $request;
+
+        $hash = verificarString($request->get('hash'));
         $admin = self::localizarPeloHash($hash);
-        if (!$admin){
+        if (!$admin) {
             exit;
         }
 
@@ -224,7 +234,7 @@ class AdminController extends Controller
      */
     private static function localizarPeloHash(string $hash)
     {
-        if ($hash == ''){
+        if ($hash == '') {
             parent::view('index', ['mensagem' => 'Acesso incorreto']);
             return false;
         }
@@ -232,13 +242,13 @@ class AdminController extends Controller
         $params = http_build_query(['hash' => $hash]);
         $admin = (new Admin())->find('hash = :hash', $params)->fetch();
 
-        if (!$admin){
+        if (!$admin) {
             $mensagem = 'Não foi possível localizar seu cadastro.<br>Execute o processo de recuperação de senha novamente.';
             parent::view('index', ['mensagem' => $mensagem]);
             return false;
         }
 
-        if ($admin->status != 2){
+        if ($admin->status != 2) {
             $mensagem = 'Acesso não autorizado.<br>Execute o processo de recuperação de senha novamente.';
             parent::view('index', ['mensagem' => $mensagem]);
             return false;
@@ -250,36 +260,38 @@ class AdminController extends Controller
     /**
      * Verificar se está tudo OK, e redefinir a senha do usuário --- PAREI AQUI
      */
-    public static function redefinir(array $post, array $get)
+    public static function redefinir()
     {
-        if (!isset($post['_token']) || $post['_token'] != $_SESSION['csrf']){
+        global $request;
+
+        if ($request->post('_token', '') == '' || $request->post('_token') != $_SESSION['csrf']) {
             parent::logout();
             exit;
         }
 
-        $hash = verificarString($post['hash']);
+        $hash = verificarString($request->post('hash'));
         $admin = self::localizarPeloHash($hash);
-        if (!$admin){
+        if (!$admin) {
             exit;
         }
 
-        $admin_id = verificarString($post['admin_id']);
+        $admin_id = verificarString($request->post('admin_id'));
 
-        if ($admin->id != $admin_id){
+        if ($admin->id != $admin_id) {
             parent::view('index', ['mensagem' => 'Acesso incorreto.']);
             exit;
         }
 
-        if (verificarString($post['senha']) == ''){
+        if (verificarString($request->post('senha')) == '') {
             criarCsrf();
             parent::view('admin.redefinir', ['mensagem' => 'As senhas devem ser informadas.', 'admin' => $admin]);
             exit;
         }
 
-        $senha = sha1($post['senha']);
-        $senharepetida = sha1($post['senharepetida']);
+        $senha = sha1($request->post('senha'));
+        $senharepetida = sha1($request->post('senharepetida'));
 
-        if ($senha != $senharepetida){
+        if ($senha != $senharepetida) {
             criarCsrf();
             parent::view('admin.redefinir', ['mensagem' => 'As senhas devem ser idênticas.', 'admin' => $admin]);
             exit;
@@ -289,7 +301,7 @@ class AdminController extends Controller
         $admin->senha = $senha;
         $admin->hash = '';
 
-        if (!$admin->save()){
+        if (!$admin->save()) {
             gravarLog('Não foi atualizada a senha do usuário na redefinição: ' . $admin->fail()->getMessage());
             self::view('index', ['mensagem' => 'Não foi possível redefinir a senha. Favor proceder novamente.']);
             exit;

@@ -10,9 +10,21 @@ class LibAnotacao
         'A' => 'Alta'
     );
 
+    public array $situacao = array(
+        'N' => 'Normal',
+        'F' => 'Finalizada',
+        'C' => 'Cancelada',
+        'A' => 'Arquivada'
+    );
+
     public static function getPrioridade(string $prioridade = '')
     {
         return ($prioridade == '') ? self::$prioridade : self::$prioridade[$prioridade];
+    }
+
+    public static function getSituacao(string $situacao = '')
+    {
+        return ($situacao == '') ? self::$situacao : self::$situacao[$situacao];
     }
 
     public static function extrairData($dataHora)
